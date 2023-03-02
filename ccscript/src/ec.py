@@ -9,17 +9,28 @@ import parser
 import scraper
 import writer
 import pandas as pd
+import textwrap
 
 
 args = parser.parser().parse_args()
 reports = scraper.scraper(args.source, args.headings, args.c)
-for report in reports:
-    #format the output in a pretty way
+
+#format the output in a pretty way
+print("_"*100)
+print()
+for count, report in enumerate(reports):
+    print("REPORT #", count+1)
+    print()
     for heading in report.keys():
         output = ""
         for line in report[heading]:
+            output += '\n'
             output += line
-        print(heading, output, sep=":")
+        prefix = heading.upper() + ": "
+        preferredWidth = 100
+        wrapper = textwrap.TextWrapper(initial_indent=prefix, width=preferredWidth,subsequent_indent=' '*len(prefix))
+        print(wrapper.fill(output))
         print()
-    print("*"*50)
+    print("_"*100)
+    print()
 #writer.writer(data, args.destination)

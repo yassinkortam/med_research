@@ -7,7 +7,6 @@
 
 import re
 import numpy as np
-from difflib import SequenceMatcher
 
 # #NLP
 from sentence_transformers import SentenceTransformer
@@ -80,19 +79,19 @@ def columator(report, headings):
     relevant_sections = {}
     for heading in headings:
         #Encode the given heading
-        heading_embedding = model.encode([heading.strip().lower()])
+        heading_embedding = model.encode(heading.strip().lower())
 
         #Encode the headings in the report
         report_headings = list(report_sections.keys())
         report_headings_embeddings = model.encode(report_headings)
 
         #Find the most similar heading
-        similarities = cosine_similarity(heading_embedding, report_headings_embeddings)
+        similarities = cosine_similarity([heading_embedding], report_headings_embeddings)[0]
         closest_heading = report_headings[np.argmax(similarities)]
 
         #Save the section with the most similar heading if it is not empty
         if report_sections[closest_heading] != []:
-            relevant_sections[heading] = report_sections[closest_heading]
+            relevant_sections[closest_heading] = report_sections[closest_heading]
             
     #Return a DataFrame with the sections
     return relevant_sections

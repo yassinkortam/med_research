@@ -15,6 +15,7 @@ def scraper(source, headings, reports_column):
     Args:
         - str
         - str
+        - str
         
     Returns:
         - Series
