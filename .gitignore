@@ -1,1 +1,4 @@
+ec
 *.csv
+.DS_Store
+.gitingore

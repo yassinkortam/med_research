@@ -31,6 +31,3 @@ def scraper(source, headings, reports_column):
     
     reports = reports.apply(lambda x: columator.columator(x, headings))
     return reports
-
-
-    

@@ -6,14 +6,15 @@
 ############################################################################
 
 import re
+import numpy as np
 from difflib import SequenceMatcher
 
 # #NLP
-# from sentence_transformers import SentenceTransformer
-# from sklearn.metrics.pairwise import cosine_similarity
-# from scipy.signal import argrelextrema
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.signal import argrelextrema
 
-#Currently, sections are found using regex and sequence matcher for simplicity
+#Currently, sections are found using regex 
 #Ideally, sections would be found using NLP
 
 #Readings
@@ -72,18 +73,26 @@ def columator(report, headings):
     #Break up the report into sections
     report_sections = sections(lines)
 
+    #Use sentence transformers to find the most similar headings
+    model = SentenceTransformer('all-mpnet-base-v2')
+
     #Find the sections with headings that are the same or similar to the given headings
     relevant_sections = {}
     for heading in headings:
-        #Find the section with the most similar heading using SequenceMatcher
-        closest_heading = max(report_sections.keys(), key=lambda x: SequenceMatcher(None, x, heading.strip().lower()).ratio())
+        #Encode the given heading
+        heading_embedding = model.encode([heading.strip().lower()])
 
-        #Check if the closest heading is the same or similar to the given heading
-        if SequenceMatcher(None, closest_heading, heading.strip().lower()).ratio() > 0.6:
+        #Encode the headings in the report
+        report_headings = list(report_sections.keys())
+        report_headings_embeddings = model.encode(report_headings)
 
-            #Save the section with the most similar heading if it is not empty
-            if len(report_sections[closest_heading]) > 0:
-                relevant_sections[closest_heading] = report_sections[closest_heading]
-    
+        #Find the most similar heading
+        similarities = cosine_similarity(heading_embedding, report_headings_embeddings)
+        closest_heading = report_headings[np.argmax(similarities)]
+
+        #Save the section with the most similar heading if it is not empty
+        if report_sections[closest_heading] != []:
+            relevant_sections[heading] = report_sections[closest_heading]
+            
     #Return a DataFrame with the sections
     return relevant_sections
