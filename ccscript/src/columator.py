@@ -5,13 +5,12 @@
 #    WRITTEN BY YASSIN KORTAM <YASSINKORTAM@G.UCLA.EDU>, MARCH 2023        #
 ############################################################################
 
-import re
 import numpy as np
-
-# #NLP
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.signal import argrelextrema
+
+from grapher import build_graph
 
 #Currently, sections are found using regex 
 #Ideally, sections would be found using NLP
@@ -31,67 +30,42 @@ def columator(report, headings):
         - dict
     '''
 
-    #A report is divided into sections by headings
-    #All the text between a heading and the next heading is a section
-    #A heading can be found in the report if it satisfies the following:
-    # - It is at the beginning of a line
-    # - It is followed by a colon
-    def sections(lines):
-        '''
-        Break up a report into sections.
-
-        Args:
-            - list
-
-        Returns:
-            - dict
-        '''
-        sections = {"":[]}
-        prevheading = ""
-        for line in lines:
-
-            #Check if there is a heading
-            raw_heading = re.findall("^.*:", line)
-            if raw_heading:
-                heading = raw_heading[0].strip().lower().replace(':', '')
-                sections[heading] = []
-                if line.replace(raw_heading[0], '').split() != []:
-                    sections[heading].append(line.replace(raw_heading[0], ''))
-                prevheading = heading
-
-            #Save contents of each line under the previous heading
-            else:
-                if line.split() != []:
-                    sections[prevheading].append(line)
-        return sections
+    #Build a graph representation of the report
+    root, nodes = build_graph(report)
     
-    #The sections with headings that are the same or similar to the given headings are saved
-    #Split the report into lines
-    lines = report.splitlines()
-
-    #Break up the report into sections
-    report_sections = sections(lines)
-
-    #Use sentence transformers to find the most similar headings
-    model = SentenceTransformer('all-mpnet-base-v2')
-
     #Find the sections with headings that are the same or similar to the given headings
-    relevant_sections = {}
+    # - Find the cosine similarity between the heading and the node name
+    # - Add the node with the maximum similarity to the relevant sections
+    # - choose a model that is fast and good for short phrases
+    model = SentenceTransformer('all-mpnet-base-v2')
+    relevant_nodes = {}
     for heading in headings:
+
         #Encode the given heading
         heading_embedding = model.encode(heading.strip().lower())
 
         #Encode the headings in the report
-        report_headings = list(report_sections.keys())
+        report_node_hashes = sorted(nodes.keys())
+        report_headings = [nodes[node_hash].name for node_hash in report_node_hashes]
         report_headings_embeddings = model.encode(report_headings)
 
         #Find the most similar heading
         similarities = cosine_similarity([heading_embedding], report_headings_embeddings)[0]
-        closest_heading = report_headings[np.argmax(similarities)]
+        closest_node_hash = report_node_hashes[np.argmax(similarities)]
 
-        #Save the section with the most similar heading if it is not empty
-        if report_sections[closest_heading] != []:
-            relevant_sections[closest_heading] = report_sections[closest_heading]
-            
-    #Return a DataFrame with the sections
-    return relevant_sections
+        #Find the node with the maximum similarity
+        relevant_node = nodes[closest_node_hash]
+
+        #Do a BFS to find all the text in nodes that are connected to the relevant node
+        relevant_text = ""
+        queue = [relevant_node]
+        while queue:
+            node = queue.pop(0)
+            relevant_text += node.name + ":"
+            relevant_text += node.text
+            for child in node.children:
+                queue.append(child)
+        relevant_nodes[relevant_node.name] = relevant_text
+
+    #Return a Dict with the sections
+    return relevant_nodes

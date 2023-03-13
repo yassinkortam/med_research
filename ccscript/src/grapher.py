@@ -91,6 +91,7 @@ def build_graph(report_text):
             _id = hashlib.sha256(unique_line.encode()).hexdigest()
             new_node = Node(_id, line, current_node)
             new_node.name = heading
+            root.children.append(new_node)
             heading_node = new_node
             current_node = new_node
             nodes[_id] = new_node
@@ -113,7 +114,7 @@ def build_graph(report_text):
         else:
             current_node.text += line
         
-    return nodes
+    return root, nodes
 
 ##############################################################################
 #                                UNIT TESTS                                  #
