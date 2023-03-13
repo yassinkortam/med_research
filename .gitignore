@@ -1,4 +1,7 @@
 ec
+.*
 *.csv
+*.xlsx
+sample_data
 .DS_Store
 .gitingore

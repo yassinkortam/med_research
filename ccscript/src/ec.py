@@ -24,7 +24,6 @@ for count, report in enumerate(reports):
     for heading in report.keys():
         output = ""
         for line in report[heading]:
-            output += '\n'
             output += line
         prefix = heading.upper() + ": "
         preferredWidth = 100
