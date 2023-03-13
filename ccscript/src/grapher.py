@@ -13,8 +13,10 @@ def is_heading(line):
     :type line: str
     :rtype: bool
     '''
-    raw_heading = re.findall("^[^a-z]\w:", line)
-    if raw_heading:
+    pat = re.compile(r"^.*:")
+    if not pat.match(line):
+        return False
+    if line.split(':')[0].upper() == line.split(':')[0]:
         return True
     return False
 
@@ -29,11 +31,11 @@ def is_subheading(line):
     :type line: str
     :rtype: bool
     '''
-    raw_heading = re.findall("^.*:", line)
-    if raw_heading:
-        heading = raw_heading[0].strip().lower().replace(':', '')
-        if not heading.isupper():
-            return True
+    pat = re.compile(r"^.*:")
+    if not pat.match(line):
+        return False
+    if not is_heading(line):
+        return True
     return False
 
 #Define the document graph
@@ -71,30 +73,43 @@ def build_graph(report_text):
     #Create the root node
     root = Node(hashlib.sha256("root".encode()).hexdigest(), "root")
 
-    #Create the current node
+    #Create the current node7
     current_node = root
     heading_node = root
 
-    for line in lines:
+    for count, line in enumerate(lines):
+        
+        unique_line = line + str(count)
+
         #Check if the line is a heading
         if is_heading(line):
+            #Split the line at the semicolon
+            heading = line.split(":")[0]
+            line = line.split(":")[1]
+
             #Create a new node
-            _id = hashlib.sha256(line.encode()).hexdigest()
+            _id = hashlib.sha256(unique_line.encode()).hexdigest()
             new_node = Node(_id, line, current_node)
+            new_node.name = heading
             heading_node = new_node
             current_node = new_node
             nodes[_id] = new_node
 
         #Check if the line is a subheading
         elif is_subheading(line):
+            #Split the line at the semicolon
+            subheading = line.split(":")[0]
+            line = line.split(":")[1]
+
             #Create a new node
-            _id = hashlib.sha256(line.encode()).hexdigest()
+            _id = hashlib.sha256(unique_line.encode()).hexdigest()
             new_node = Node(_id, line, current_node)
+            new_node.name = subheading
             heading_node.children.append(new_node)
             current_node = new_node
             nodes[_id] = new_node
 
-        #Add the line to the current node
+        #Add the line to the current node otherwise
         else:
             current_node.text += line
         
@@ -119,5 +134,22 @@ class TestIsSubheading(unittest.TestCase):
         self.assertTrue(is_subheading("Subheading4:"))
         self.assertFalse(is_subheading("SUBHEADING 1: "))
         self.assertFalse(is_subheading("SUBHEADING 2:"))
+
+class TestBuildGraph(unittest.TestCase):
+    #Get text report from file
+    def get_report_text(self, filename):
+        with open(filename, "r") as f:
+            return f.read()
+    
+    def test_build_graph(self):
+        report_text = self.get_report_text("/Users/yassinkortam/Documents/GitHub/med_research/sample_data/report1.txt")
+        nodes = build_graph(report_text)
+        num_headings = 0
+        for node in nodes.values():
+            if node.children:
+                num_headings += 1
+        self.assertEqual(num_headings, 6)
+                
+
 
 
