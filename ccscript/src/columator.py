@@ -9,7 +9,6 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.signal import argrelextrema
-
 from grapher import build_graph
 
 #Currently, sections are found using regex 
@@ -61,11 +60,11 @@ def columator(report, headings):
         queue = [relevant_node]
         while queue:
             node = queue.pop(0)
-            relevant_text += node.name + ":"
+            relevant_text += node.name + ":\n"
             relevant_text += node.text
             for child in node.children:
                 queue.append(child)
-        relevant_nodes[relevant_node.name] = relevant_text
+        relevant_nodes[heading] = relevant_text
 
     #Return a Dict with the sections
     return relevant_nodes

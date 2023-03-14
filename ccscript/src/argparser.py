@@ -8,16 +8,16 @@
 import argparse
 import re 
 
-def parser():
+def argparser():
     '''
     Parse arguements for the ec.py program from the command line.
 
     Returns:
         - ArgumentParser
     '''
-    def csv(arg_value, pat=re.compile(r"^[\w\-. ]+\.csv$")):
+    def xlsx(arg_value, pat=re.compile(r"^[\w\-. ]+\.xlsx$")):
         '''
-        Make sure that a given filename is valid and a csv
+        Make sure that a given filename is valid and an xlsx
 
         Args:
             - str
@@ -30,7 +30,7 @@ def parser():
             - ArgumentTypeError exception 
         '''
         if not pat.match(arg_value):
-            raise argparse.ArgumentTypeError("file must be a csv with a valid filename")
+            raise argparse.ArgumentTypeError("file must be a xlsx with a valid filename")
         return arg_value
     
     def heading(arg_value, pat=re.compile(r"^[\w\-. ]")):
@@ -48,16 +48,16 @@ def parser():
             - ArgumentTypeError exception 
         '''
         if not pat.match(arg_value):
-            raise argparse.ArgumentTypeError("file must be a csv with a valid filename")
+            raise argparse.ArgumentTypeError("file must be an xlsx with a valid filename")
         return arg_value
     
-    parser = argparse.ArgumentParser(description='Automatically scrape columated data from a column of plain text reports')
+    parser = argparse.ArgumentParser(description='Automatically generate columated data from a column of plain text reports')
     parser.add_argument('-c', type=str, default='reports',
                         help='column name of the column containing plain text reports')
-    parser.add_argument('source', metavar='src', type=csv, 
-                        help='source csv file with plain text reports')
-    parser.add_argument('destination', metavar='dest', type=csv, 
-                        help='destination csv file to save columated data')
+    parser.add_argument('-d', type=xlsx, default=None,
+                        help='destination xlsx file to save columated data')
+    parser.add_argument('source', metavar='src', type=xlsx, 
+                        help='source xlsx file with plain text reports')
     parser.add_argument('headings', metavar='hdngs', type=heading, nargs='+',
                         help='headings for the columated data')
     return parser

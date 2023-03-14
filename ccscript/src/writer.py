@@ -10,9 +10,11 @@ import pandas as pd
 def writer(data, destination):
     '''
     Write the given Series of DataFrames to a given source file.
-
-    Args:
-        - Series
-        - str
+    :type data: DataFrame
+    :type destination: str
     '''
-    data.to_csv(destination)
+    try:
+        data.to_excel(destination)
+        data
+    except FileNotFoundError:
+        raise FileNotFoundError("The given destination file does not exist")

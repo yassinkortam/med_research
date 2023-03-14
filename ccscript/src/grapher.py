@@ -1,3 +1,10 @@
+############################################################################
+#            COPYRIGHT (C) YASSIN KORTAM - ALL RIGHTS RESERVED             #
+# UNAUTHORIZED COPYING OF THIS FILE, VIA ANY MEDIUM IS STRICTLY PROHIBITED #
+#                       PROPRIETARY AND CONFIDENTIAL                       #
+#    WRITTEN BY YASSIN KORTAM <YASSINKORTAM@G.UCLA.EDU>, MARCH 2023        #
+############################################################################
+
 import re
 import hashlib
 import unittest
